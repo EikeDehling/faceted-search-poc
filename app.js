@@ -25,8 +25,16 @@ const App = React.createClass({
 			country: "",
 			activity: "",
 
-			countries: [ "NL", "UK", "BE" ],
-			activities: [ 1, 2, 3 ]
+			countries: [
+                { name: "NL", count: 123 },
+                { name: "UK", count: 123 },
+                { name: "BE", count: 123 }
+            ],
+			activities: [
+			    { name: 1, count: 123 },
+			    { name: 2, count: 123 },
+			    { name: 3, count: 123 }
+			]
 		}
 	},
 
@@ -50,12 +58,30 @@ const App = React.createClass({
 			        bool: {
 			            must: filters
 			        }
+                },
+                aggs: {
+                    activities: {
+                        terms: {
+                            field: 'activity_code'
+                        }
+                    },
+                    countries: {
+                        terms: {
+                            field: 'country_code'
+                        }
+                    }
                 }
 			}
 		}).then(function ( body ) {
 			this.setState({
 			    results: body.hits.hits,
-			    total_count: body.hits.total
+			    total_count: body.hits.total,
+			    activities: body.aggregations.activities.buckets
+			        .map((entry) => { return { name: entry.key, count: entry.doc_count } })
+			        .filter((entry) => { return entry.name !== "" }),
+                countries: body.aggregations.countries.buckets
+                    .map((bucket) => { return { name: bucket.key, count: bucket.doc_count } })
+                    .filter((entry) => { return entry.name !== "" })
 			})
 		}.bind(this), function ( error ) {
 			console.trace( error.message );
@@ -73,10 +99,6 @@ const App = React.createClass({
     updateActivity(activity_code) {
         this.setState({activity: activity_code}, function done() { this.doSearch() })
     },
-
-	nothing(event) {
-	    // Do nothing
-	},
 
 	render() {
 		return (
@@ -98,7 +120,7 @@ const App = React.createClass({
                             <Panel header="Filter by Country">
                                 <ListGroup fill>
                                     { this.state.countries.map((ctry) => {
-                                        return <ListGroupItem onClick={this.updateCountry.bind(this, ctry)}>{ctry}</ListGroupItem> }) }
+                                        return <ListGroupItem onClick={this.updateCountry.bind(this, ctry.name)}>{ctry.name} ({ctry.count})</ListGroupItem> }) }
 
                                     <ListGroupItem onClick={this.updateCountry.bind(this, "")}>(Clear)</ListGroupItem>
                                 </ListGroup>
@@ -107,18 +129,9 @@ const App = React.createClass({
                             <Panel header="Filter by Activity Code">
                                 <ListGroup fill>
                                     { this.state.activities.map((act) => {
-                                        return <ListGroupItem onClick={this.updateActivity.bind(this, act)}>{act}</ListGroupItem> }) }
+                                        return <ListGroupItem onClick={this.updateActivity.bind(this, act.name)}>{act.name} ({act.count})</ListGroupItem> }) }
 
                                     <ListGroupItem onClick={this.updateActivity.bind(this, "")}>(Clear)</ListGroupItem>
-                                </ListGroup>
-                            </Panel>
-
-                            <Panel header="Filter by # Employees">
-                                <ListGroup fill>
-                                    <ListGroupItem onClick={this.nothing}>0-5</ListGroupItem>
-                                    <ListGroupItem onClick={this.nothing}>5-10</ListGroupItem>
-                                    <ListGroupItem onClick={this.nothing}>10-100</ListGroupItem>
-                                    <ListGroupItem onClick={this.nothing}>&gt; 100</ListGroupItem>
                                 </ListGroup>
                             </Panel>
                         </Panel>
