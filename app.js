@@ -4,7 +4,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Jumbotron, PageHeader, Grid, Row, Col, Panel, ListGroup, ListGroupItem } from 'react-bootstrap';
+import { Jumbotron, PageHeader, Grid, Row, Col, Panel, ListGroup, ListGroupItem, Button } from 'react-bootstrap';
 import elasticsearch from 'elasticsearch'
 
 
@@ -16,35 +16,44 @@ let client = new elasticsearch.Client({
 
 
 const App = React.createClass({
-	getInitialState () {
+	getInitialState() {
 		return {
-			results: []
+			results: [],
+			total_count: 0,
+
+			query: ""
 		}
 	},
 
-	handleChange ( event ) {
+	doSearch(event) {
 		client.search({
 		    index: 'companies',
-			//q: event.target.value
 			body: {
 			    query: {
                     match: {
-                        organization_name: event.target.value
+                        organization_name: this.state.query
                     }
                 }
 			}
 		}).then(function ( body ) {
-			this.setState({ results: body.hits.hits })
+			this.setState({
+			    results: body.hits.hits,
+			    total_count: body.hits.total
+			})
 		}.bind(this), function ( error ) {
 			console.trace( error.message );
 		});
 	},
 
-	nothing ( event ) {
+	updateQuery(event) {
+	    this.setState({query: event.target.value})
+	},
+
+	nothing(event) {
 	    // Do nothing
 	},
 
-	render () {
+	render() {
 		return (
             <Grid>
                 <Jumbotron className="text-center">
@@ -56,7 +65,8 @@ const App = React.createClass({
                 <Row>
                     <Col xs={3} md={3}>
                         <Panel header="Filters" bsStyle="primary">
-                            <input type="text" onChange={ this.handleChange } placeholder="Enter query ..." />
+                            <input type="text" onChange={this.updateQuery} placeholder="Enter query ..." size="20" />
+                            <Button bsStyle="primary" onClick={this.doSearch}>Search</Button>
 
                             <p>&nbsp;</p>
 
@@ -81,7 +91,9 @@ const App = React.createClass({
 
                     <Col xs={9} md={9}>
                         <Panel header="Results" bsStyle="primary">
-                            { this.state.results.length == 0 ?
+                            <p>Total results: { this.state.total_count }</p>
+
+                            { this.state.total_count == 0 ?
                                     <p>No results found</p>
                                 :
                                     <ul>

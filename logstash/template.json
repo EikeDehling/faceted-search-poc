@@ -1,5 +1,5 @@
 {
-  "template":   "companies",
+  "template": "companies",
   "mappings": {
     "company": {
       "properties": {
@@ -7,17 +7,52 @@
           "type": "long",
           "doc_values": false
         },
-        "legal_form_type_code": {
+        "organization_name": {
           "type": "string"
         },
-        "has_technical_director": {
-          "type": "boolean"
+        "organization_type": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "activity_code": {
+          "type": "long"
+        },
+        "incorporation_date": {
+          "type":   "date",
+          "format": "basic_date"
         },
         "org_size_class": {
-          "type": "string"
+          "type": "string",
+          "index": "not_analyzed"
         },
         "city": {
           "type": "string"
+        },
+        "postcode": {
+          "type": "string"
+        },
+        "provence": {
+          "type": "string"
+        },
+        "country_code": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "legal_form_code": {
+          "type": "long"
+        },
+        "legal_form_type_code": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "has_purchase_director": {
+          "type": "boolean"
+        },
+        "has_sales_director": {
+          "type": "boolean"
+        },
+        "has_technical_director": {
+          "type": "boolean"
         },
         "has_director_hrm": {
           "type": "boolean"
@@ -28,41 +63,11 @@
         "has_telephone_number": {
           "type": "boolean"
         },
-        "postcode": {
-          "type": "string"
-        },
-        "legal_form_code": {
-          "type": "string"
-        },
-        "activity_code": {
-          "type": "long"
-        },
-        "organization_name": {
-          "type": "string"
-        },
-        "has_purchase_director": {
-          "type": "boolean"
-        },
-        "has_sales_director": {
-          "type": "boolean"
-        },
-        "country_code": {
-          "type": "string"
-        },
         "has_marketing_director": {
           "type": "boolean"
         },
-        "provence": {
-          "type": "string"
-        },
-        "organization_type": {
-          "type": "string"
-        },
         "has_financial_director": {
           "type": "boolean"
-        },
-        "incorporation_date": {
-          "type": "string"
         }
       }
     }
