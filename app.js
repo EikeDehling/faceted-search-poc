@@ -5,6 +5,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Jumbotron, PageHeader, Grid, Row, Col, Panel, ListGroup, ListGroupItem, Button } from 'react-bootstrap';
+import Autocomplete from 'react-autocomplete';
 import elasticsearch from 'elasticsearch'
 
 
@@ -21,8 +22,9 @@ const App = React.createClass({
 			results: [],
 			total_count: 0,
 
-			query: "",
 			city: "",
+			suggestions: [],
+
 			country: "",
 			activity: "",
 			year: { from: "0", to: "9999" },
@@ -41,10 +43,6 @@ const App = React.createClass({
 	    let filters = [
 	        { range: { incorporation_date: { gte: this.state.year.from, lte: this.state.year.to, format: 'yyyy'}}}
 	    ]
-
-	    if (this.state.query !== "") {
-	        filters.push({ match: { organization_name: this.state.query }})
-	    }
 
 	    if (this.state.city !== "") {
 	        filters.push({ match: { city: this.state.city }})
@@ -96,8 +94,6 @@ const App = React.createClass({
                 }
 			}
 		}).then(function ( body ) {
-		    debugger;
-
 			this.setState({
 			    results: body.hits.hits,
 			    total_count: body.hits.total,
@@ -111,22 +107,26 @@ const App = React.createClass({
                     .map((bucket) => { return { from: bucket.from_as_string, to: bucket.to_as_string, display: bucket.key, count: bucket.doc_count } })
                     .filter((entry) => { return entry.name !== "" }),
 			})
-		}.bind(this), function ( error ) {
-			console.trace( error.message );
-		});
+		}.bind(this));
 	},
 
-	updateQuery(event) {
-	    this.setState({query: event.target.value})
+	doSuggest(value) {
+	    client.suggest({
+	        index: 'companies',
+	        body: {
+	            city: {
+	                text: value,
+                    term: {
+                      field: 'city'
+                    }
+	            }
+	        }
+	    }).then(function success(body) {
+	        this.setState({
+	           suggestions: body.city[0].options.map((sug) => { return sug.text })
+	        });
+	    }.bind(this));
 	},
-
-	updateCity(event) {
-        this.setState({city: event.target.value})
-    },
-
-    clear(event) {
-        this.setState({query: "", city: ""}, function done() { this.doSearch() })
-    },
 
 	updateCountry(country_code) {
         this.setState({country: country_code}, function done() { this.doSearch() })
@@ -152,10 +152,24 @@ const App = React.createClass({
                 <Row>
                     <Col xs={3} md={3}>
                         <Panel header="Filters" bsStyle="primary">
-                            <input type="text" onChange={this.updateQuery} placeholder="Enter query ..." value={this.state.query} />
-                            <input type="text" onChange={this.updateCity} placeholder="Enter city ..." value={this.state.city} />
-                            <Button onClick={this.clear}>Clear</Button>
-                            <Button bsStyle="primary" onClick={this.doSearch}>Search</Button>
+                            <Autocomplete
+                                  value={this.state.city}
+                                  inputProps={{placeholder: 'Enter city...'}}
+                                  items={this.state.suggestions}
+                                  getItemValue={(item) => item}
+                                  onSelect={(value, item) => {
+                                    // set the dropdown to only the selected item, refresh search results
+                                    this.setState({ city: item, suggestions: [ item ] },
+                                        function cb() { this.doSearch() })
+                                  }}
+                                  onChange={(event, value) => {
+                                    this.setState({ city: value, loading: true },
+                                        function cb() { this.doSuggest(value) })
+                                  }}
+                                  renderItem={(item, isHighlighted, style) => (
+                                    <div className={isHighlighted ? 'highlighted' : null} id={item}>{item}</div>
+                                  )}
+                                />
 
                             <p>&nbsp;</p>
 
