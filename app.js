@@ -21,18 +21,35 @@ const App = React.createClass({
 			results: [],
 			total_count: 0,
 
-			query: ""
+			query: "",
+			country: "",
+			activity: "",
+
+			countries: [ "NL", "UK", "BE" ],
+			activities: [ 1, 2, 3 ]
 		}
 	},
 
 	doSearch(event) {
+	    let filters = [
+	        { match: { organization_name: this.state.query } }
+	    ]
+
+	    if (this.state.country !== "") {
+	        filters.push({ terms: { country_code: [ this.state.country ] } })
+	    }
+
+	    if (this.state.activity !== "") {
+            filters.push({ terms: { activity_code: [ this.state.activity ] } })
+        }
+
 		client.search({
 		    index: 'companies',
 			body: {
 			    query: {
-                    match: {
-                        organization_name: this.state.query
-                    }
+			        bool: {
+			            must: filters
+			        }
                 }
 			}
 		}).then(function ( body ) {
@@ -48,6 +65,14 @@ const App = React.createClass({
 	updateQuery(event) {
 	    this.setState({query: event.target.value})
 	},
+
+	updateCountry(country_code) {
+        this.setState({country: country_code}, function done() { this.doSearch() })
+    },
+
+    updateActivity(activity_code) {
+        this.setState({activity: activity_code}, function done() { this.doSearch() })
+    },
 
 	nothing(event) {
 	    // Do nothing
@@ -65,16 +90,26 @@ const App = React.createClass({
                 <Row>
                     <Col xs={3} md={3}>
                         <Panel header="Filters" bsStyle="primary">
-                            <input type="text" onChange={this.updateQuery} placeholder="Enter query ..." size="20" />
+                            <input type="text" onChange={this.updateQuery} placeholder="Enter query ..." size="16" />
                             <Button bsStyle="primary" onClick={this.doSearch}>Search</Button>
 
                             <p>&nbsp;</p>
 
                             <Panel header="Filter by Country">
                                 <ListGroup fill>
-                                    <ListGroupItem onClick={this.nothing}>Netherlands</ListGroupItem>
-                                    <ListGroupItem onClick={this.nothing}>Belgium</ListGroupItem>
-                                    <ListGroupItem onClick={this.nothing}>Luxemburg</ListGroupItem>
+                                    { this.state.countries.map((ctry) => {
+                                        return <ListGroupItem onClick={this.updateCountry.bind(this, ctry)}>{ctry}</ListGroupItem> }) }
+
+                                    <ListGroupItem onClick={this.updateCountry.bind(this, "")}>(Clear)</ListGroupItem>
+                                </ListGroup>
+                            </Panel>
+
+                            <Panel header="Filter by Activity Code">
+                                <ListGroup fill>
+                                    { this.state.activities.map((act) => {
+                                        return <ListGroupItem onClick={this.updateActivity.bind(this, act)}>{act}</ListGroupItem> }) }
+
+                                    <ListGroupItem onClick={this.updateActivity.bind(this, "")}>(Clear)</ListGroupItem>
                                 </ListGroup>
                             </Panel>
 
@@ -90,22 +125,29 @@ const App = React.createClass({
                     </Col>
 
                     <Col xs={9} md={9}>
-                        <Panel header="Results" bsStyle="primary">
-                            <p>Total results: { this.state.total_count }</p>
-
-                            { this.state.total_count == 0 ?
-                                    <p>No results found</p>
-                                :
-                                    <ul>
-                                        { this.state.results.map((result) => {
-                                            return <li key={ result._id }>{ result._source.organization_name }</li> }) }
-                                    </ul>
-                                }
-                        </Panel>
+                        <Results total_count={this.state.total_count} results={this.state.results} />
                     </Col>
                 </Row>
             </Grid>
 		)
+	}
+})
+
+
+const Results = React.createClass({
+    render() {
+		return (<Panel header="Results" bsStyle="primary">
+                    <p>Total results: { this.props.total_count }</p>
+
+                    { this.props.total_count == 0 ?
+                            <p>No results found</p>
+                        :
+                            <ul>
+                                { this.props.results.map((result) => {
+                                    return <li key={ result._id }>{ result._source.organization_name }</li> }) }
+                            </ul>
+                        }
+                </Panel>)
 	}
 })
 
