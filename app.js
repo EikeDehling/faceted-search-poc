@@ -21,7 +21,8 @@ const App = React.createClass({
 			results: [],
 			total_count: 0,
 
-			query: "*",
+			query: "",
+			city: "",
 			country: "",
 			activity: "",
 			year: { from: "0", to: "9999" },
@@ -38,9 +39,16 @@ const App = React.createClass({
 
 	doSearch(event) {
 	    let filters = [
-	        { query_string: { query: this.state.query, default_field: 'organization_name' } },
 	        { range: { incorporation_date: { gte: this.state.year.from, lte: this.state.year.to, format: 'yyyy'}}}
 	    ]
+
+	    if (this.state.query !== "") {
+	        filters.push({ match: { organization_name: this.state.query }})
+	    }
+
+	    if (this.state.city !== "") {
+	        filters.push({ match: { city: this.state.city }})
+        }
 
 	    if (this.state.country !== "") {
 	        filters.push({ terms: { country_code: [ this.state.country ] } })
@@ -112,6 +120,14 @@ const App = React.createClass({
 	    this.setState({query: event.target.value})
 	},
 
+	updateCity(event) {
+        this.setState({city: event.target.value})
+    },
+
+    clear(event) {
+        this.setState({query: "", city: ""}, function done() { this.doSearch() })
+    },
+
 	updateCountry(country_code) {
         this.setState({country: country_code}, function done() { this.doSearch() })
     },
@@ -136,7 +152,9 @@ const App = React.createClass({
                 <Row>
                     <Col xs={3} md={3}>
                         <Panel header="Filters" bsStyle="primary">
-                            <input type="text" onChange={this.updateQuery} placeholder="Enter query ..." size="16" />
+                            <input type="text" onChange={this.updateQuery} placeholder="Enter query ..." value={this.state.query} />
+                            <input type="text" onChange={this.updateCity} placeholder="Enter city ..." value={this.state.city} />
+                            <Button onClick={this.clear}>Clear</Button>
                             <Button bsStyle="primary" onClick={this.doSearch}>Search</Button>
 
                             <p>&nbsp;</p>
