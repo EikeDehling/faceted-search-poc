@@ -24,9 +24,11 @@ const App = React.createClass({
 			query: "*",
 			country: "",
 			activity: "",
+			year: { from: "0", to: "9999" },
 
 			countries: [],
-			activities: []
+			activities: [],
+			years: []
 		}
 	},
 
@@ -36,7 +38,8 @@ const App = React.createClass({
 
 	doSearch(event) {
 	    let filters = [
-	        { query_string: { query: this.state.query, default_field: 'organization_name' } }
+	        { query_string: { query: this.state.query, default_field: 'organization_name' } },
+	        { range: { incorporation_date: { gte: this.state.year.from, lte: this.state.year.to, format: 'yyyy'}}}
 	    ]
 
 	    if (this.state.country !== "") {
@@ -65,10 +68,28 @@ const App = React.createClass({
                         terms: {
                             field: 'country_code'
                         }
+                    },
+                    years: {
+                        date_range: {
+                            field: 'incorporation_date',
+                            format: 'yyyy',
+                            ranges: [
+                                {               to: "1950" },
+                                { from: "1950", to: "1975" },
+                                { from: "1975", to: "1990" },
+                                { from: "1990", to: "2000" },
+                                { from: "2000", to: "2005" },
+                                { from: "2005", to: "2010" },
+                                { from: "2010", to: "2015" },
+                                { from: "2015"             }
+                            ]
+                        }
                     }
                 }
 			}
 		}).then(function ( body ) {
+		    debugger;
+
 			this.setState({
 			    results: body.hits.hits,
 			    total_count: body.hits.total,
@@ -77,7 +98,10 @@ const App = React.createClass({
 			        .filter((entry) => { return entry.name !== "" }),
                 countries: body.aggregations.countries.buckets
                     .map((bucket) => { return { name: bucket.key, count: bucket.doc_count } })
-                    .filter((entry) => { return entry.name !== "" })
+                    .filter((entry) => { return entry.name !== "" }),
+                years: body.aggregations.years.buckets
+                    .map((bucket) => { return { from: bucket.from_as_string, to: bucket.to_as_string, display: bucket.key, count: bucket.doc_count } })
+                    .filter((entry) => { return entry.name !== "" }),
 			})
 		}.bind(this), function ( error ) {
 			console.trace( error.message );
@@ -94,6 +118,10 @@ const App = React.createClass({
 
     updateActivity(activity_code) {
         this.setState({activity: activity_code}, function done() { this.doSearch() })
+    },
+
+    updateYear(from, to) {
+        this.setState({year: {from: from, to: to}}, function done() { this.doSearch() })
     },
 
 	render() {
@@ -113,7 +141,7 @@ const App = React.createClass({
 
                             <p>&nbsp;</p>
 
-                            <Panel header="Filter by Country">
+                            <Panel header="Filter by Country" collapsible>
                                 <ListGroup fill>
                                     { this.state.countries.map((ctry) => {
                                         return <ListGroupItem onClick={this.updateCountry.bind(this, ctry.name)}>{ctry.name} ({ctry.count})</ListGroupItem> }) }
@@ -122,7 +150,16 @@ const App = React.createClass({
                                 </ListGroup>
                             </Panel>
 
-                            <Panel header="Filter by Activity Code">
+                            <Panel header="Filter by Year" collapsible>
+                                <ListGroup fill>
+                                    { this.state.years.map((entry) => {
+                                        return <ListGroupItem onClick={this.updateYear.bind(this, entry.from, entry.to)}>{entry.display} ({entry.count})</ListGroupItem> }) }
+
+                                    <ListGroupItem onClick={this.updateActivity.bind(this, "")}>(Clear)</ListGroupItem>
+                                </ListGroup>
+                            </Panel>
+
+                            <Panel header="Filter by Activity Code" collapsible>
                                 <ListGroup fill>
                                     { this.state.activities.map((act) => {
                                         return <ListGroupItem onClick={this.updateActivity.bind(this, act.name)}>{act.name} ({act.count})</ListGroupItem> }) }
