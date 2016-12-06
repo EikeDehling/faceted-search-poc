@@ -23,7 +23,7 @@ const App = React.createClass({
 			total_count: 0,
 
 			city: "",
-			suggestions: [],
+			city_suggestions: [],
 
 			country: "",
 			activity: "",
@@ -123,7 +123,7 @@ const App = React.createClass({
 	        }
 	    }).then(function success(body) {
 	        this.setState({
-	           suggestions: body.city[0].options.map((sug) => { return sug.text })
+	           city_suggestions: body.city[0].options.map((sug) => { return sug.text })
 	        });
 	    }.bind(this));
 	},
@@ -155,11 +155,11 @@ const App = React.createClass({
                             <Autocomplete
                                   value={this.state.city}
                                   inputProps={{placeholder: 'Enter city...'}}
-                                  items={this.state.suggestions}
+                                  items={this.state.city_suggestions}
                                   getItemValue={(item) => item}
                                   onSelect={(value, item) => {
                                     // set the dropdown to only the selected item, refresh search results
-                                    this.setState({ city: item, suggestions: [ item ] },
+                                    this.setState({ city: item, city_suggestions: [ item ] },
                                         function cb() { this.doSearch() })
                                   }}
                                   onChange={(event, value) => {
