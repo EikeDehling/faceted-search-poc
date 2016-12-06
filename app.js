@@ -21,26 +21,22 @@ const App = React.createClass({
 			results: [],
 			total_count: 0,
 
-			query: "",
+			query: "*",
 			country: "",
 			activity: "",
 
-			countries: [
-                { name: "NL", count: 123 },
-                { name: "UK", count: 123 },
-                { name: "BE", count: 123 }
-            ],
-			activities: [
-			    { name: 1, count: 123 },
-			    { name: 2, count: 123 },
-			    { name: 3, count: 123 }
-			]
+			countries: [],
+			activities: []
 		}
+	},
+
+	componentDidMount() {
+	    this.doSearch()
 	},
 
 	doSearch(event) {
 	    let filters = [
-	        { match: { organization_name: this.state.query } }
+	        { query_string: { query: this.state.query, default_field: 'organization_name' } }
 	    ]
 
 	    if (this.state.country !== "") {
