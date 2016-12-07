@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Jumbotron, PageHeader, Grid, Row, Col, Panel, ListGroup, ListGroupItem, Button } from 'react-bootstrap';
+import { Jumbotron, PageHeader, Grid, Row, Col, Panel, ListGroup, ListGroupItem, Button, FormControl,
+         FormGroup, ControlLabel } from 'react-bootstrap';
 import Autocomplete from 'react-autocomplete';
 import elasticsearch from 'elasticsearch'
 
@@ -24,6 +25,7 @@ const App = React.createClass({
 			country: "",
 			activity: "",
 			year: { from: "0", to: "9999" },
+			postcode: { from: "", to: "" },
 
 			countries: [],
 			activities: [],
@@ -41,6 +43,20 @@ const App = React.createClass({
 	    if (this.state.year.from !== "0" || this.state.year.to !== "9999") {
 	        filters.push({ range: { incorporation_date: { gte: this.state.year.from, lte: this.state.year.to, format: 'yyyy'}}})
 	    }
+
+	    if (this.state.postcode.from !== "" || this.state.postcode.to !== "") {
+	        debugger;
+
+	        let filter = { range: { postcode: { }}}
+
+	        if (this.state.postcode.from !== "")
+	            filter.range.postcode.gte = this.state.postcode.from;
+
+	        if (this.state.postcode.to !== "")
+            	filter.range.postcode.lte = this.state.postcode.to;
+
+            filters.push(filter)
+        }
 
 	    if (this.state.city !== "") {
 	        filters.push({ match: { city: this.state.city }})
@@ -117,7 +133,7 @@ const App = React.createClass({
 		}.bind(this));
 
         /**
-         * Second search to retrieve top results ; this is not cache unfortunately
+         * Second search to retrieve top results ; this is not cached unfortunately
          */
 		client.search({
         		    index: 'companies',
@@ -168,6 +184,14 @@ const App = React.createClass({
         this.setState({year: {from: from, to: to}}, function done() { this.doSearch() })
     },
 
+    updatePostcodeFrom(event) {
+        this.setState({postcode: {from: event.target.value}}, function done() { this.doSearch() })
+    },
+
+    updatePostcodeTo(event) {
+        this.setState({postcode: {to: event.target.value}}, function done() { this.doSearch() })
+    },
+
 	render() {
 		return (
             <Grid>
@@ -199,6 +223,22 @@ const App = React.createClass({
                                     <div className={isHighlighted ? 'highlighted' : 'unhighlighted'} id={item}>{item}</div>
                                   )}
                                 />
+
+                            <p>&nbsp;</p>
+
+                            <FormGroup controlId="postcode">
+                              <ControlLabel>Postcode range</ControlLabel>
+                              <FormControl
+                                type="text"
+                                value={this.state.postcode.from}
+                                placeholder="From ..."
+                                onChange={this.updatePostcodeFrom} />
+                              <FormControl
+                                type="text"
+                                value={this.state.postcode.to}
+                                placeholder="To ..."
+                                onChange={this.updatePostcodeTo} />
+                            </FormGroup>
 
                             <p>&nbsp;</p>
 
