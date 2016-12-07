@@ -163,3 +163,88 @@ In the application we can the query the _suggest endpoint to fetch suggestions:
         }
     }'
 ```
+
+
+## Filtering results
+
+In this part i'm describing some of the queries/filters the application uses to filter results. Whenever your enter
+a query (e.g. city name) or click on one of the filters, these are added to your search query and the results are
+filtered.
+
+The basis structure for the query is:
+
+```
+    "query": {
+        "bool": {
+            "must": []
+        }
+    }
+```
+
+Within the "must" element all required filters and queries should be added.
+
+
+### Simple "terms" filter
+
+For simple filtering (not full text) by a value, e.g. by an activity code (a number) we use a terms query:
+
+```
+    { "terms": { "activity_code": [ 123 ] } }
+```
+
+
+### Text-based queries
+
+There is many text-based query options, please read the elasticsearch docs:
+https://www.elastic.co/guide/en/elasticsearch/reference/current/full-text-queries.html
+
+In this sample app the match query is used:
+
+```
+    { "match": { "city": "Amsterdam" }}
+```
+
+
+### Date range queries
+
+To filter on dates, for example year of incorporation of a company, we use a range filter. For example to filter
+on copmanies incorporated between 1995 and 1998 run the query below:
+
+```
+    { "range": { "incorporation_date": { "gte": "1995", "lte": "1998", format: 'yyyy'}}}
+```
+
+Note the format parameter. This concerns the format we're entering dates in this query, it has no effect on the format
+how dates are stored or indexed in elasticsearch. It's here so we only need to type the years here.
+
+
+### String range queries
+
+You can use a simple range query to filter by string range. For example to filter on all postcodes between 1111AA and
+999ZZ, use the filter below:
+
+```
+    { "range": { "postcode": { "gte": "1111AA", "lte": "9999ZZ" }}}
+
+```
+
+
+### Geo distance filter
+
+Note this is not currenty implemented in the application, but documented here for future use! Please see here for a
+more complete explanation: https://www.elastic.co/guide/en/elasticsearch/reference/current/geo-queries.html
+
+An example of querying by geo distance (Distance from a specified point), for example for a radius of 5 kilometer
+around coordinate 52.22, 4.54 (Amsterdam central station):
+
+```
+    {
+        "geo_distance" : {
+            "distance" : "5km",
+            "pin.location" : {
+                "lat" : 52.22,
+                "lon" : 4.54
+            }
+        }
+    }
+```
