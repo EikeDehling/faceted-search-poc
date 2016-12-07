@@ -40,9 +40,11 @@ const App = React.createClass({
 	},
 
 	doSearch(event) {
-	    let filters = [
-	        { range: { incorporation_date: { gte: this.state.year.from, lte: this.state.year.to, format: 'yyyy'}}}
-	    ]
+	    let filters = []
+
+	    if (this.state.year.from !== "0" || this.state.year.to !== "9999") {
+	        filters.push({ range: { incorporation_date: { gte: this.state.year.from, lte: this.state.year.to, format: 'yyyy'}}})
+	    }
 
 	    if (this.state.city !== "") {
 	        filters.push({ match: { city: this.state.city }})
@@ -56,8 +58,18 @@ const App = React.createClass({
             filters.push({ terms: { activity_code: [ this.state.activity ] } })
         }
 
+        /**
+         * Search-type=count ; requestCache=true ; this is to allow caching of the results
+         * Unfortunately elastic only cache totals & aggs, not the hits itself. So if we'd
+         * search for hits also, the query will not get cached!
+         *
+         * Note the aggregations are the "expensive" part! We simply do a second, cheap search
+         * query that only fetches top results...
+         */
 		client.search({
 		    index: 'companies',
+		    requestCache: true,
+		    searchType: 'count',
 			body: {
 			    query: {
 			        bool: {
@@ -95,7 +107,6 @@ const App = React.createClass({
 			}
 		}).then(function ( body ) {
 			this.setState({
-			    results: body.hits.hits,
 			    total_count: body.hits.total,
 			    activities: body.aggregations.activities.buckets
 			        .map((entry) => { return { name: entry.key, count: entry.doc_count } })
@@ -108,6 +119,25 @@ const App = React.createClass({
                     .filter((entry) => { return entry.name !== "" }),
 			})
 		}.bind(this));
+
+        /**
+         * Second search to retrieve top results ; this is not cache unfortunately
+         */
+		client.search({
+        		    index: 'companies',
+        			body: {
+        			    query: {
+        			        bool: {
+        			            must: filters
+        			        }
+                        }
+        			}
+        		}).then(function ( body ) {
+        			this.setState({
+        			    results: body.hits.hits,
+        			    total_count: body.hits.total
+        			})
+        		}.bind(this));
 	},
 
 	doSuggest(value) {
@@ -190,7 +220,7 @@ const App = React.createClass({
                                     { this.state.years.map((entry) => {
                                         return <ListGroupItem onClick={this.updateYear.bind(this, entry.from, entry.to)}>{entry.display} ({entry.count})</ListGroupItem> }) }
 
-                                    <ListGroupItem onClick={this.updateActivity.bind(this, "")}>(Clear)</ListGroupItem>
+                                    <ListGroupItem onClick={this.updateYear.bind(this, "0", "9999")}>(Clear)</ListGroupItem>
                                 </ListGroup>
                             </Panel>
 
