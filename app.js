@@ -1,7 +1,3 @@
-/**
- * Based on https://github.com/scotchfield/elasticsearch-react-example/
- */
-
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Jumbotron, PageHeader, Grid, Row, Col, Panel, ListGroup, ListGroupItem, Button } from 'react-bootstrap';
@@ -215,7 +211,7 @@ const App = React.createClass({
                                 </ListGroup>
                             </Panel>
 
-                            <Panel header="Filter by Year" collapsible defaultExpanded={false}>
+                            <Panel header="Filter by Year" collapsible defaultExpanded={true}>
                                 <ListGroup fill>
                                     { this.state.years.map((entry) => {
                                         return <ListGroupItem onClick={this.updateYear.bind(this, entry.from, entry.to)}>{entry.display} ({entry.count})</ListGroupItem> }) }
@@ -224,7 +220,7 @@ const App = React.createClass({
                                 </ListGroup>
                             </Panel>
 
-                            <Panel header="Filter by Activity Code" collapsible defaultExpanded={false}>
+                            <Panel header="Filter by Activity Code" collapsible defaultExpanded={true}>
                                 <ListGroup fill>
                                     { this.state.activities.map((act) => {
                                         return <ListGroupItem onClick={this.updateActivity.bind(this, act.name)}>{act.name} ({act.count})</ListGroupItem> }) }
