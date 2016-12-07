@@ -206,7 +206,7 @@ const App = React.createClass({
 
                             <p>&nbsp;</p>
 
-                            <Panel header="Filter by Country" collapsible>
+                            <Panel header="Filter by Country" collapsible defaultExpanded={true}>
                                 <ListGroup fill>
                                     { this.state.countries.map((ctry) => {
                                         return <ListGroupItem onClick={this.updateCountry.bind(this, ctry.name)}>{ctry.name} ({ctry.count})</ListGroupItem> }) }
@@ -215,7 +215,7 @@ const App = React.createClass({
                                 </ListGroup>
                             </Panel>
 
-                            <Panel header="Filter by Year" collapsible>
+                            <Panel header="Filter by Year" collapsible defaultExpanded={false}>
                                 <ListGroup fill>
                                     { this.state.years.map((entry) => {
                                         return <ListGroupItem onClick={this.updateYear.bind(this, entry.from, entry.to)}>{entry.display} ({entry.count})</ListGroupItem> }) }
@@ -224,7 +224,7 @@ const App = React.createClass({
                                 </ListGroup>
                             </Panel>
 
-                            <Panel header="Filter by Activity Code" collapsible>
+                            <Panel header="Filter by Activity Code" collapsible defaultExpanded={false}>
                                 <ListGroup fill>
                                     { this.state.activities.map((act) => {
                                         return <ListGroupItem onClick={this.updateActivity.bind(this, act.name)}>{act.name} ({act.count})</ListGroupItem> }) }

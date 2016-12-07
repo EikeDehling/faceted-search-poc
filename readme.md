@@ -58,6 +58,39 @@ requests therefore, one for the aggregations (cached) and one for the top result
 ## Autocomplete
 
 For a nicer user experience, autocompletion is performed when typing a city name. This is implemented with the
-completion suggester in elasticsearch, see for example this guide for more explanation:
-
+completion suggester in elasticsearch, see for this guide for a more complete explanation:
 https://www.elastic.co/blog/you-complete-me
+
+The auto-complete on the frontend is built with react-autocomplete, see https://github.com/reactjs/react-autocomplete
+
+For the completion in elasticsearch, in the basis, a special field for the suggestions was added to the mapping,
+see logstash/template.json
+
+```
+    "city_suggest": {
+      "type": "completion"
+    }
+```
+
+In logstash we fill this field with a copy of the city, see logstash.conf
+
+```
+    mutate {
+        add_field => {
+            "city_suggest" => "%{city}"
+        }
+    }
+```
+
+In the application we can the query the _suggest endpoint to fetch suggestions:
+
+```
+    curl -X POST localhost:9200/companies/_suggest -d '{
+        "city" : {
+            "text" : "a",
+            "completion" : {
+                "field" : "city_suggest"
+            }
+        }
+    }'
+```
