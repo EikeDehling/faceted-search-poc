@@ -116,12 +116,14 @@ const App = React.createClass({
 	        body: {
 	            city: {
 	                text: value,
-                    term: {
-                      field: 'city'
+                    completion: {
+                      field: 'city_suggest'
                     }
 	            }
 	        }
 	    }).then(function success(body) {
+	        debugger;
+
 	        this.setState({
 	           city_suggestions: body.city[0].options.map((sug) => { return sug.text })
 	        });

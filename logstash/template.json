@@ -28,6 +28,9 @@
         "city": {
           "type": "string"
         },
+        "city_suggest": {
+          "type": "completion"
+        },
         "postcode": {
           "type": "string"
         },

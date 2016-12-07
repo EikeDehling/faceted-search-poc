@@ -27,3 +27,10 @@ To allow cross-origin request, enable this in your elasticsearch config:
     enabled: true
     allow-origin: /.*/
 ```
+
+## Autocomplete
+
+For a nicer user experience, autocompletion is performed when typing a city name. This is implemented with the
+completion suggester in elasticsearch, see for example this guide for more explanation:
+
+https://www.elastic.co/blog/you-complete-me
