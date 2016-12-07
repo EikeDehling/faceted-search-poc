@@ -164,8 +164,6 @@ const App = React.createClass({
 	            }
 	        }
 	    }).then(function success(body) {
-	        debugger;
-
 	        this.setState({
 	           city_suggestions: body.city[0].options.map((sug) => { return sug.text })
 	        });
