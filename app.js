@@ -160,16 +160,17 @@ const App = React.createClass({
                                   items={this.state.city_suggestions}
                                   getItemValue={(item) => item}
                                   onSelect={(value, item) => {
-                                    // set the dropdown to only the selected item, refresh search results
+                                    // Set the input field value to only the selected item, execute search
                                     this.setState({ city: item, city_suggestions: [ item ] },
                                         function cb() { this.doSearch() })
                                   }}
                                   onChange={(event, value) => {
-                                    this.setState({ city: value, loading: true },
+                                    // Update input field value, fetch suggestions
+                                    this.setState({ city: value },
                                         function cb() { this.doSuggest(value) })
                                   }}
                                   renderItem={(item, isHighlighted, style) => (
-                                    <div className={isHighlighted ? 'highlighted' : null} id={item}>{item}</div>
+                                    <div className={isHighlighted ? 'highlighted' : 'unhighlighted'} id={item}>{item}</div>
                                   )}
                                 />
 

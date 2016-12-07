@@ -1,1 +1,14 @@
 /** Empty */
+
+div .highlighted {
+    color: white;
+    // background: hsl(200, 50%, 50%);
+    background: linear-gradient(to bottom,#337ab7 0,#2e6da4 100%);
+    padding: 2px 6px;
+    cursor: default;
+}
+
+div .unhighlighted {
+    padding: 2px 6px;
+    cursor: default;
+}
