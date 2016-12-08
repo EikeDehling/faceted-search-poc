@@ -76,6 +76,27 @@ a second query to retrieve the hits. Luckily the second query needs only hits (n
 much faster. (Note we could optimise this and execute both request in one msearch/bulk call)
 
 
+### Documents missing the facet value
+
+Some docs (companies) might not have a value for the field we're calculating the facet on. This can be addressed by
+specifying hw to handle them, see here:
+https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-terms-aggregation.html#_missing_value_12
+
+
+```
+    "activities": {
+      "terms": {
+        "field": "activity_code",
+        "missing": "N/A"
+      }
+    }
+```
+
+This means an extra bucket is added for docs missing the field.
+
+There is also always a missing aggregation, that allows to count docs missing specific fields:
+https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-missing-aggregation.html
+
 ## CORS Support
 
 To allow cross-origin request, enable this in your elasticsearch config:

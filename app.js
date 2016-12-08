@@ -91,12 +91,16 @@ const App = React.createClass({
                 aggs: {
                     activities: {
                         terms: {
-                            field: 'activity_code'
+                            field: 'activity_code',
+                            // This means docs missing the field will be summarized under '0' entry
+                            missing: 0
                         }
                     },
                     countries: {
                         terms: {
-                            field: 'country_code'
+                            field: 'country_code',
+                            // This means docs missing the field will be summarized under 'N/A' entry
+                            missing: 'N/A'
                         }
                     },
                     years: {
