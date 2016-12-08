@@ -269,3 +269,8 @@ around coordinate 52.22, 4.54 (Amsterdam central station):
         }
     }
 ```
+
+To be able to search by geo-distance based on address (city) or postcode fields, thosee will first need to be translated
+gps (lat/long) coordinates. That should happen when loading the data, so e.g. it could be implemented in logstash.
+
+See here for an example api that can be used: https://www.postcodeapi.nu
