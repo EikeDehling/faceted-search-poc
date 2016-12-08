@@ -3,7 +3,7 @@
   "mappings": {
     "company": {
       "properties": {
-        "identifcation": {
+        "identification": {
           "type": "long",
           "doc_values": false
         },
